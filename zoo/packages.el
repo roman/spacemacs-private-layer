@@ -1,6 +1,7 @@
 (defvar zoo-packages
   '(evil-visual-mark-mode
     clocker
+    nix-mode
     navorski
     confluence
     whitespace
