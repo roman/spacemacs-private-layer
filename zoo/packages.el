@@ -6,10 +6,16 @@
     confluence
     whitespace
     helm-c-yasnippet
+
+    ;; clojure
     paredit
     evil-paredit
-    paredit
+    cider
+    flycheck-clojure
+    flycheck-pos-tip
+
     ensime
+    w3m
     haskell-mode
     org))
 
@@ -78,7 +84,41 @@
     :config
     (progn
       (ad-activate 'spacemacs/mode-line-prepare-left)
+      (evil-leader/set-key "tC" 'clocker-mode)
       (clocker-mode 1))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
+;; shamelessly stolen from
+;; http://beatofthegeek.com/2014/02/my-setup-for-using-emacs-as-web-browser.html
+
+(defun zoo/reddit (reddit)
+  "Opens the REDDIT in w3m-new-session"
+  (interactive (list
+                (read-string "Enter the reddit (default: haskell): " nil nil "haskell" nil)))
+  (browse-url (format "http://m.reddit.com/r/%s" reddit)))
+
+
+(defun zoo/hoogle (term)
+  "Opens hoogle search in w3m-new-session"
+  (interactive (list
+                (read-string "Enter the hoogle term: ")))
+  (browse-url (format "http://www.haskell.org/hoogle/?hoogle=%s" term)))
+
+;; When I want to enter the web address all by hand
+(defun zoo/w3m-open-site (site)
+  "Opens site in new w3m session with 'http://' appended"
+  (interactive
+   (list (read-string "Enter website address (default: google.com):" nil nil "google.com" nil )))
+  (w3m-goto-url-new-session
+      (concat "http://" site)))
+
+(defun zoo/init-w3m ()
+  (use-package w3m
+    :init
+    (progn
+      (setq-default browse-url-browser-function 'w3m-goto-url-new-session)
+      (setq-default w3m-user-agent "Mozilla/5.0 (Linux; U; Android 2.3.3; zh-tw; HTC_Pyramid Build/GRI40) AppleWebKit/533.1 (KHTML, like Gecko) Version/4.0 Mobile Safari/533."))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
@@ -115,14 +155,22 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun zoo/init-evil-paredit ())
+
+(defun zoo/flycheck-clojure-after-hook ()
+  (flycheck-mode 1)
+  (flycheck-clojure-setup))
+
+(defun zoo/init-flycheck-clojure ()
+  (use-package clojure-mode
+    :config
+    (progn
+      (setq flycheck-display-errors-function #'flycheck-pos-tip-error-messages)
+      (add-hook 'clojure-mode-hook 'zoo/clojure-after-hook))))
+
 (defun zoo/clojure-after-hook ()
   (paredit-mode 1)
-  (evil-paredit-mode)
-  (smartparens-mode -1))
-
-(defun zoo/cider-after-hook ()
-  (paredit-mode 1)
-  (evil-paredit-mode)
+  (evil-paredit-mode 1)
   (smartparens-mode -1))
 
 (defun zoo/cider-switch-and-load ()
@@ -141,11 +189,7 @@
   (cider-load-file (buffer-file-name))
   (cider-test-run-test))
 
-(defun zoo/init-paredit ()
-  (use-package clojure-mode
-    :config
-    (progn
-      (add-hook 'clojure-mode-hook 'zoo/clojure-after-hook)))
+(defun zoo/init-cider ()
   (use-package cider
     :config
     (progn
@@ -153,9 +197,17 @@
         "ml" 'zoo/cider-switch-and-load
         "m," 'zoo/cider-load-and-test
         "mi" 'cider-inspect
-        "mq" 'cider-quit)
+        "mq" 'cider-quit
+        "msc" 'cider-connect)
       (setq cider-repl-pop-to-buffer-on-connect t)
-      (add-hook 'cider-repl-mode-hook 'zoo/cider-after-hook))))
+      (add-hook 'cider-repl-mode-hook 'zoo/clojure-after-hook))))
+
+(defun zoo/init-clojure-mode ()
+  (use-package clojure-mode
+    :config
+    (progn
+      (setq flycheck-display-errors-function #'flycheck-pos-tip-error-messages)
+      (add-hook 'clojure-mode-hook 'zoo/clojure-after-hook))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
