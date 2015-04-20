@@ -21,6 +21,55 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 
+(defun zoo/-get-hook-funcs (hook)
+  (delq nil (mapcar
+             (lambda (e) (if (symbolp e) e))
+             hook)))
+
+(defun zoo/-get-hook-funcs-names (hook)
+  (mapcar 'symbol-name
+          (zoo/-get-hook-funcs
+           (if (symbolp hook)
+               (symbol-value hook)
+             hook))))
+
+(defun zoo/-get-all-hooks ()
+  (let (hlist (list))
+    (mapatoms (lambda (a)
+                (if (and (not (null (string-match ".*-hook"
+                                                  (symbol-name a))))
+                         (not (functionp a)))
+                    (add-to-list 'hlist a))))
+        hlist))
+
+(defun zoo/remove-from-hook (hook fname &optional local)
+  (interactive
+   (let ((hook (intern (ido-completing-read
+                        "Which hook? "
+                        (mapcar #'symbol-name (zoo/-get-all-hooks))))))
+     (list hook
+           (ido-completing-read "Which? " (zoo/-get-hook-funcs-names hook)))))
+  (remove-hook hook
+               (if (stringp fname)
+                   (intern fname)
+                 fname)
+               local))
+
+(defun zoo/remove-after-save-hook (fname)
+  (interactive (list (ido-completing-read
+                      "Which? "
+                      (zoo/-get-hook-funcs-names after-save-hook))))
+    (zoo/remove-from-hook 'after-save-hook fname t))
+
+(defun zoo/add-after-save-hook (fname)
+  (interactive "aWhich function: ")
+    (add-hook 'after-save-hook fname t t))
+
+(evil-define-key 'normal php-mode-map
+  (kbd "<SPC>mr") 'start-wordpress)
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+
 (defun zoo/navorski-terminal-line-mode ()
   (interactive)
   (when (term-in-char-mode)

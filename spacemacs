@@ -12,7 +12,7 @@
    ;; of a list then all discovered layers will be installed.
    dotspacemacs-configuration-layers '(themes-megapack auto-completion
                                        haskell clojure scala ruby javascript
-                                       git syntax-checking zoo)
+                                       git php syntax-checking zoo)
    ;; A list of packages and/or extensions that will not be install and loaded.
    dotspacemacs-excluded-packages '(xterm-mouse-mode)
    ;; If non-nil spacemacs will delete any orphan packages, i.e. packages that
